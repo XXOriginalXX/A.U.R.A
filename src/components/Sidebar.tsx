@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, Calendar, Clock, BookOpen, 
   Monitor, CalendarClock, User, LogOut 
@@ -11,6 +11,25 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ activeView, setActiveView, username }: SidebarProps) => {
+  const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD'];
+  const [logoColor, setLogoColor] = useState(colors[0]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogoClick = () => {
+    setIsLoading(true);
+    let colorIndex = 0;
+    const interval = setInterval(() => {
+      setLogoColor(colors[colorIndex]);
+      colorIndex = (colorIndex + 1) % colors.length;
+    }, 200);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      setLogoColor(colors[Math.floor(Math.random() * colors.length)]);
+      setIsLoading(false);
+    }, 2000);
+  };
+
   const menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { id: 'timetable', icon: Calendar, label: 'Time Table' },
@@ -23,7 +42,18 @@ const Sidebar = ({ activeView, setActiveView, username }: SidebarProps) => {
   return (
     <div className="fixed w-64 h-screen bg-gray-900 border-r border-gray-800 p-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold font-reospec">AURA</h1>
+        <h1 
+          className="text-3xl font-bold font-reospec cursor-pointer transition-colors duration-300"
+          style={{ color: logoColor }}
+          onClick={handleLogoClick}
+        >
+          AURA
+          {isLoading && (
+            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
+            </div>
+          )}
+        </h1>
         <p className="text-gray-400 text-sm">Academic Dashboard</p>
       </div>
 
