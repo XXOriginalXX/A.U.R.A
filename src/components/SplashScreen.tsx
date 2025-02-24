@@ -7,7 +7,7 @@ const SplashScreen = () => {
   useEffect(() => {
     setTimeout(() => setOpacity(1), 100);
 
-    const duration = 2000; // 2 seconds for the full animation
+    const duration = 4000; // 4 seconds for the full animation
     const startTime = Date.now();
 
     const animate = () => {
