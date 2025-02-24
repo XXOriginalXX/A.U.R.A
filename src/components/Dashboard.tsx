@@ -1,9 +1,15 @@
 import React from 'react';
-import { Clock, Calendar } from 'lucide-react';
+import { Clock } from 'lucide-react';
 
 const Dashboard = ({ attendanceData }: { attendanceData: any }) => {
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
   const todayClasses = attendanceData?.timetable?.[today] || [];
+
+  const formatSubject = (subject: string) => {
+    if (!subject || subject === "No Class") return "No Class";
+    const match = subject.match(/^([A-Z]+\d+)\s*-\s*(.+?)(?:\[\s*Theory\s*\].*)?$/);
+    return match ? match[2].trim() : subject;
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -18,7 +24,7 @@ const Dashboard = ({ attendanceData }: { attendanceData: any }) => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-400">Period {index + 1}</p>
-                  <p className="font-medium">{subject || 'No Class'}</p>
+                  <p className="font-medium">{formatSubject(subject)}</p>
                 </div>
               </div>
             </div>
