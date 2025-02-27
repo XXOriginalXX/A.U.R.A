@@ -19,7 +19,7 @@ const Assignments: React.FC = () => {
 
     try {
       // Construct the prompt for Cohere
-      const prompt = Generate an assignment on the topic "${topic}" for the subject "${subjectName}" (Code: ${subjectCode}). The assignment should be approximately ${numPages} pages long.;
+      const prompt = `Generate an assignment on the topic "${topic}" for the subject "${subjectName}" (Code: ${subjectCode}). The assignment should be approximately ${numPages} pages long.`;
 
       // Call the Cohere API
       const response = await axios.post(
@@ -31,7 +31,7 @@ const Assignments: React.FC = () => {
         },
         {
           headers: {
-            'Authorization': Bearer ${COHERE_API_KEY}, // Use the hardcoded API key
+            'Authorization': `Bearer ${COHERE_API_KEY}`, // Fixed interpolation issue
             'Content-Type': 'application/json',
           },
         }
