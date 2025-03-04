@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, Calendar, Clock, BookOpen, 
-  Monitor, CalendarClock, User, LogOut 
+  Monitor, CalendarClock, User, LogOut, ChevronLeft, ChevronRight
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -13,10 +13,13 @@ interface SidebarProps {
 const Sidebar = ({ activeView, setActiveView, username }: SidebarProps) => {
   const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEEAD'];
   const [logoColor, setLogoColor] = useState(colors[0]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isColorChanging, setIsColorChanging] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   const handleLogoClick = () => {
-    setIsLoading(true);
+    if (isColorChanging) return;
+    
+    setIsColorChanging(true);
     let colorIndex = 0;
     const interval = setInterval(() => {
       setLogoColor(colors[colorIndex]);
@@ -26,7 +29,7 @@ const Sidebar = ({ activeView, setActiveView, username }: SidebarProps) => {
     setTimeout(() => {
       clearInterval(interval);
       setLogoColor(colors[Math.floor(Math.random() * colors.length)]);
-      setIsLoading(false);
+      setIsColorChanging(false);
     }, 2000);
   };
 
@@ -39,46 +42,73 @@ const Sidebar = ({ activeView, setActiveView, username }: SidebarProps) => {
     { id: 'events', icon: CalendarClock, label: 'College Events' },
   ];
 
+  const toggleSidebar = () => {
+    setIsCollapsed(!isCollapsed);
+  };
+
   return (
-    <div className="fixed w-64 h-screen bg-gray-900 border-r border-gray-800 p-6">
-      <div className="mb-8">
-        <h1 
-          className="text-3xl font-bold font-reospec cursor-pointer transition-colors duration-300"
-          style={{ color: logoColor }}
-          onClick={handleLogoClick}
-        >
-          AURA
-          {isLoading && (
-            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
-              <div className="w-4 h-4 border-2 border-t-transparent border-white rounded-full animate-spin"></div>
-            </div>
-          )}
-        </h1>
-        <p className="text-gray-400 text-sm">Academic Dashboard</p>
+    <div 
+      className={`fixed h-screen bg-gray-900 border-r border-gray-800 transition-all duration-300 ${
+        isCollapsed ? 'w-20' : 'w-64'
+      }`}
+    >
+      <div 
+        className="absolute -right-3 top-10 bg-gray-800 rounded-full p-1 cursor-pointer z-10"
+        onClick={toggleSidebar}
+      >
+        {isCollapsed ? 
+          <ChevronRight size={16} className="text-gray-400" /> : 
+          <ChevronLeft size={16} className="text-gray-400" />
+        }
       </div>
 
-      <div className="space-y-2">
-        {menuItems.map(({ id, icon: Icon, label }) => (
-          <button
-            key={id}
-            onClick={() => setActiveView(id)}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-              activeView === id 
-                ? 'bg-white text-black' 
-                : 'text-gray-400 hover:bg-gray-800'
+      <div className={`p-6 ${isCollapsed ? 'px-4' : ''}`}>
+        <div className="mb-8 relative">
+          <h1 
+            className={`font-bold font-reospec cursor-pointer transition-colors duration-300 ${
+              isCollapsed ? 'text-2xl text-center' : 'text-3xl'
             }`}
+            style={{ color: logoColor }}
+            onClick={handleLogoClick}
           >
-            <Icon size={20} />
-            {label}
-          </button>
-        ))}
-      </div>
+            {isCollapsed ? 'A' : 'AURA'}
+            {isColorChanging && (
+              <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: `${logoColor} transparent transparent transparent` }}></div>
+              </div>
+            )}
+          </h1>
+          {!isCollapsed && <p className="text-gray-400 text-sm">Academic Dashboard</p>}
+        </div>
 
-      <div className="absolute bottom-6 left-6 right-6">
-        <div className="border-t border-gray-800 pt-6">
-          <div className="flex items-center gap-3 px-4 py-3 text-gray-400">
-            <User size={20} />
-            <span className="truncate">{username}</span>
+        <div className="space-y-2">
+          {menuItems.map(({ id, icon: Icon, label }) => (
+            <button
+              key={id}
+              onClick={() => setActiveView(id)}
+              className={`w-full flex items-center gap-3 rounded-lg transition-colors ${
+                isCollapsed ? 'justify-center px-2 py-3' : 'px-4 py-3'
+              } ${
+                activeView === id 
+                  ? 'bg-white text-black' 
+                  : 'text-gray-400 hover:bg-gray-800'
+              }`}
+              title={isCollapsed ? label : ''}
+            >
+              <Icon size={20} />
+              {!isCollapsed && label}
+            </button>
+          ))}
+        </div>
+
+        <div className={`absolute bottom-6 ${isCollapsed ? 'left-0 right-0 px-2' : 'left-6 right-6'}`}>
+          <div className="border-t border-gray-800 pt-6">
+            <div className={`flex items-center gap-3 text-gray-400 ${
+              isCollapsed ? 'justify-center' : 'px-4 py-3'
+            }`}>
+              <User size={20} />
+              {!isCollapsed && <span className="truncate">{username}</span>}
+            </div>
           </div>
         </div>
       </div>
