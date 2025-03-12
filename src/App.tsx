@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { toast, Toaster } from 'react-hot-toast';
 import { 
@@ -25,6 +25,11 @@ interface AttendanceData {
   timetable: Record<string, string[]>;
 }
 
+interface EyePositionProps {
+  left: number;
+  top: number;
+}
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showSplash, setShowSplash] = useState(false);
@@ -32,6 +37,12 @@ function App() {
   const [attendanceData, setAttendanceData] = useState<AttendanceData | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeView, setActiveView] = useState('dashboard');
+  const [leftEyePosition, setLeftEyePosition] = useState<EyePositionProps>({ left: 50, top: 50 });
+  const [rightEyePosition, setRightEyePosition] = useState<EyePositionProps>({ left: 50, top: 50 });
+  const [activeInput, setActiveInput] = useState<'username' | 'password' | null>(null);
+  const usernameInputRef = useRef<HTMLInputElement>(null);
+  const passwordInputRef = useRef<HTMLInputElement>(null);
+  const characterRef = useRef<HTMLDivElement>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,14 +73,113 @@ function App() {
     }
   };
 
+ 
+  useEffect(() => {
+    const updateEyePosition = () => {
+      if (!characterRef.current) return;
+      
+      const characterRect = characterRef.current.getBoundingClientRect();
+      const characterCenterX = characterRect.left + characterRect.width / 2;
+      const characterCenterY = characterRect.top + characterRect.height / 2;
+      
+      let targetX = characterCenterX;
+      let targetY = characterCenterY;
+      
+      
+      if (activeInput === 'username' && usernameInputRef.current) {
+        const inputRect = usernameInputRef.current.getBoundingClientRect();
+        targetX = inputRect.left + (loginData.username.length * 8) + 10; // Approximate character width
+        targetY = inputRect.top + inputRect.height / 2;
+      } else if (activeInput === 'password' && passwordInputRef.current) {
+        const inputRect = passwordInputRef.current.getBoundingClientRect();
+        targetX = inputRect.left + (loginData.password.length * 8) + 10; // Approximate character width
+        targetY = inputRect.top + inputRect.height / 2;
+      }
+      
+      
+      const eyeMovementRangeX = 30; 
+      const eyeMovementRangeY = 30; 
+      
+      
+      const deltaX = targetX - characterCenterX;
+      const deltaY = targetY - characterCenterY;
+      
+      // Normalize and apply movement range
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      const normalizedX = distance > 0 ? deltaX / distance : 0;
+      const normalizedY = distance > 0 ? deltaY / distance : 0;
+      
+      const leftEyeLeft = 50 + normalizedX * eyeMovementRangeX;
+      const leftEyeTop = 50 + normalizedY * eyeMovementRangeY;
+      const rightEyeLeft = 50 + normalizedX * eyeMovementRangeX;
+      const rightEyeTop = 50 + normalizedY * eyeMovementRangeY;
+      
+      setLeftEyePosition({ left: leftEyeLeft, top: leftEyeTop });
+      setRightEyePosition({ left: rightEyeLeft, top: rightEyeTop });
+    };
+    
+    updateEyePosition();
+    
+   
+    const typingInterval = setInterval(() => {
+      if (activeInput) {
+        updateEyePosition();
+      }
+    }, 50);
+    
+    return () => clearInterval(typingInterval);
+  }, [activeInput, loginData.username, loginData.password]);
+
   if (showSplash) {
     return <SplashScreen />;
   }
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 relative">
         <Toaster position="top-right" />
+        
+        {/* Fixed Cute Character Head */}
+        <div 
+          ref={characterRef}
+          className="w-32 h-32 bg-purple-500 rounded-full mb-8 relative"
+        >
+          {/* Left Eye Socket */}
+          <div className="absolute w-8 h-8 bg-white rounded-full left-4 top-8 overflow-hidden">
+            {/* Left Eye Pupil */}
+            <div 
+              className="absolute w-4 h-4 bg-black rounded-full transition-all duration-100"
+              style={{ 
+                left: `${leftEyePosition.left}%`, 
+                top: `${leftEyePosition.top}%`, 
+                transform: 'translate(-50%, -50%)' 
+              }}
+            >
+              <div className="absolute w-1 h-1 bg-white rounded-full top-1 left-1"></div>
+            </div>
+          </div>
+          
+          {/* Right Eye Socket */}
+          <div className="absolute w-8 h-8 bg-white rounded-full right-4 top-8 overflow-hidden">
+            {/* Right Eye Pupil */}
+            <div 
+              className="absolute w-4 h-4 bg-black rounded-full transition-all duration-100"
+              style={{ 
+                left: `${rightEyePosition.left}%`, 
+                top: `${rightEyePosition.top}%`, 
+                transform: 'translate(-50%, -50%)' 
+              }}
+            >
+              <div className="absolute w-1 h-1 bg-white rounded-full top-1 left-1"></div>
+            </div>
+          </div>
+          
+          {/* Smile */}
+          <div className="absolute w-16 h-8 bottom-6 left-8">
+            <div className="w-full h-full border-b-4 border-white rounded-full"></div>
+          </div>
+        </div>
+
         <div className="text-6xl font-bold text-white mb-2 font-reospec">AURA</div>
         <div className="text-gray-400 mb-8 text-center">
           Academic Utility and Resource Allocator
@@ -77,19 +187,25 @@ function App() {
         <form onSubmit={handleLogin} className="w-full max-w-md space-y-4">
           <div className="border border-gray-700 rounded-lg p-6 bg-black">
             <input
+              ref={usernameInputRef}
               type="text"
               placeholder="Username"
               className="w-full p-3 mb-4 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-white"
               value={loginData.username}
               onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
+              onFocus={() => setActiveInput('username')}
+              onBlur={() => setActiveInput(null)}
               required
             />
             <input
+              ref={passwordInputRef}
               type="password"
               placeholder="Password"
               className="w-full p-3 mb-6 bg-black border border-gray-700 rounded-lg text-white focus:outline-none focus:border-white"
               value={loginData.password}
               onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+              onFocus={() => setActiveInput('password')}
+              onBlur={() => setActiveInput(null)}
               required
             />
             <button
