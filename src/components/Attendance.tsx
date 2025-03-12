@@ -1,8 +1,30 @@
-import React, { useState } from 'react';
-import { AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { AlertTriangle, ChevronDown, ChevronUp, Eye, EyeOff } from 'lucide-react';
 
 const Attendance = ({ attendanceData }: { attendanceData: any }) => {
   const [showDailyAttendance, setShowDailyAttendance] = useState(false);
+  const [showAttendanceDetails, setShowAttendanceDetails] = useState(true);
+
+  // Extract subject mappings from timetable data
+  const subjectMapping = useMemo(() => {
+    if (!attendanceData?.timetable) return {};
+
+    const mapping: Record<string, string> = {};
+    Object.values(attendanceData.timetable).forEach((periods: any) => {
+      if (Array.isArray(periods)) {
+        periods.forEach(period => {
+          if (typeof period === 'string') {
+            const match = period.match(/([A-Z]+\d+)\s*-\s*([^[]+)/);
+            if (match) {
+              const [, code, name] = match;
+              mapping[code.trim()] = name.trim();
+            }
+          }
+        });
+      }
+    });
+    return mapping;
+  }, [attendanceData?.timetable]);
 
   if (!attendanceData || (!attendanceData.subject_attendance && !attendanceData.daily_attendance)) {
     return (
@@ -17,10 +39,59 @@ const Attendance = ({ attendanceData }: { attendanceData: any }) => {
   const hasSubjectData = attendanceData.subject_attendance && Object.keys(attendanceData.subject_attendance).length > 0;
   const hasDailyData = attendanceData.daily_attendance && Object.keys(attendanceData.daily_attendance).length > 0;
 
-  // Sort daily attendance by date (assuming dates are in a sortable format like '10th', '11th', etc.)
-  const sortedDailyAttendance = hasDailyData
-    ? Object.entries(attendanceData.daily_attendance).sort(([a], [b]) => parseInt(a) - parseInt(b))
+  // Sort and filter out invalid subjects
+  const validSubjects = hasSubjectData
+    ? Object.entries(attendanceData.subject_attendance)
+        .filter(([subject, data]: [string, any]) => {
+          // Filter out subjects with N/A percentage or non-existent subjects
+          return data.percentage !== 'N/A' && subjectMapping[subject];
+        })
     : [];
+
+  // Calculate classes needed for target percentages
+  const calculateClassesNeeded = (current: string, total: string) => {
+    const [attended, totalClasses] = current.split('/').map(Number);
+    if (!attended || !totalClasses) return null;
+
+    const calculateForTarget = (targetPercentage: number) => {
+      const currentPercentage = (attended / totalClasses) * 100;
+      if (currentPercentage >= targetPercentage) {
+        return {
+          canCut: Math.floor(attended - (totalClasses * targetPercentage / 100)),
+          needToAttend: 0
+        };
+      } else {
+        const totalNeeded = Math.ceil((targetPercentage * totalClasses) / 100);
+        return {
+          canCut: 0,
+          needToAttend: totalNeeded - attended
+        };
+      }
+    };
+
+    return {
+      '90%': calculateForTarget(90),
+      '80%': calculateForTarget(80),
+      '75%': calculateForTarget(75)
+    };
+  };
+
+  // Sort daily attendance
+  const sortedDailyAttendance = hasDailyData
+    ? Object.entries(attendanceData.daily_attendance).sort(([a], [b]) => {
+        const numA = parseInt(a.replace(/\D/g, ''));
+        const numB = parseInt(b.replace(/\D/g, ''));
+        return numA - numB;
+      })
+    : [];
+
+  const getPercentageColor = (percentage: string) => {
+    const value = parseFloat(percentage);
+    if (isNaN(value)) return "text-gray-400";
+    if (value >= 90) return "text-green-400";
+    if (value >= 75) return "text-yellow-400";
+    return "text-red-400";
+  };
 
   return (
     <div>
@@ -29,16 +100,57 @@ const Attendance = ({ attendanceData }: { attendanceData: any }) => {
       {hasSubjectData && (
         <div className="grid gap-6 mb-8">
           <div className="bg-gray-900 rounded-lg p-6 border border-gray-800">
-            <h3 className="text-xl font-semibold mb-4">Subject-wise Attendance</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-semibold">Subject-wise Attendance</h3>
+              <button
+                onClick={() => setShowAttendanceDetails(!showAttendanceDetails)}
+                className="flex items-center gap-2 text-gray-400 hover:text-white"
+              >
+                {showAttendanceDetails ? <EyeOff size={20} /> : <Eye size={20} />}
+                {showAttendanceDetails ? 'Hide Details' : 'Show Details'}
+              </button>
+            </div>
             <div className="grid gap-4">
-              {Object.entries(attendanceData.subject_attendance).map(([subject, attendance], index) => (
-                <div key={index} className="flex justify-between items-center p-4 bg-gray-800 rounded-lg">
-                  <div className="font-medium">{subject}</div>
-                  <div className="text-green-400 font-semibold">
-                    {typeof attendance === 'string' ? attendance : 'N/A'}
+              {validSubjects.map(([subject, data]: [string, any], index) => {
+                const classesNeeded = calculateClassesNeeded(data.count, data.count.split('/')[1]);
+                
+                return (
+                  <div key={index} className="bg-gray-800 rounded-lg p-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <div className="font-medium">{subjectMapping[subject] || subject}</div>
+                      <div className="flex items-center gap-4">
+                        {showAttendanceDetails && (
+                          <span className="text-gray-300">{data.count}</span>
+                        )}
+                        <span className={`${getPercentageColor(data.percentage)} font-semibold`}>
+                          {data.percentage}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    {showAttendanceDetails && classesNeeded && (
+                      <div className="mt-3 text-sm grid gap-2">
+                        {Object.entries(classesNeeded).map(([target, calc]) => (
+                          <div key={target} className="text-gray-400">
+                            <span className="font-medium">{target}:</span>
+                            {calc.canCut > 0 ? (
+                              <span className="text-green-400 ml-2">
+                                Can skip {calc.canCut} {calc.canCut === 1 ? 'class' : 'classes'}
+                              </span>
+                            ) : calc.needToAttend > 0 ? (
+                              <span className="text-yellow-400 ml-2">
+                                Need to attend {calc.needToAttend} more {calc.needToAttend === 1 ? 'class' : 'classes'}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400 ml-2">Target achieved</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
@@ -75,7 +187,16 @@ const Attendance = ({ attendanceData }: { attendanceData: any }) => {
                         <td className="p-3 font-medium">{date}</td>
                         {Array.isArray(periods)
                           ? periods.map((period, idx) => (
-                              <td key={idx} className="p-3">{period ? period.split('\n')[0] : 'No Class'}</td>
+                              <td 
+                                key={idx} 
+                                className={`p-3 ${
+                                  period === 'Present' ? 'text-green-400' : 
+                                  period === 'Absent' ? 'text-red-400' : 
+                                  'text-gray-400'
+                                }`}
+                              >
+                                {period ? period.split('\n')[0] : 'No Class'}
+                              </td>
                             ))
                           : <td colSpan={6} className="p-3">Invalid data format</td>
                         }
