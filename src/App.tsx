@@ -73,7 +73,7 @@ function App() {
     }
   };
 
- 
+  // Update eye positions based on typing and cursor position
   useEffect(() => {
     const updateEyePosition = () => {
       if (!characterRef.current) return;
@@ -85,7 +85,7 @@ function App() {
       let targetX = characterCenterX;
       let targetY = characterCenterY;
       
-      
+      // Determine target position based on active input
       if (activeInput === 'username' && usernameInputRef.current) {
         const inputRect = usernameInputRef.current.getBoundingClientRect();
         targetX = inputRect.left + (loginData.username.length * 8) + 10; // Approximate character width
@@ -96,11 +96,11 @@ function App() {
         targetY = inputRect.top + inputRect.height / 2;
       }
       
+      // Calculate eye movement (limited to within eye socket)
+      const eyeMovementRangeX = 30; // percentage
+      const eyeMovementRangeY = 30; // percentage
       
-      const eyeMovementRangeX = 30; 
-      const eyeMovementRangeY = 30; 
-      
-      
+      // Calculate direction from character center to target
       const deltaX = targetX - characterCenterX;
       const deltaY = targetY - characterCenterY;
       
@@ -120,7 +120,7 @@ function App() {
     
     updateEyePosition();
     
-   
+    // Add small micro-movements when typing
     const typingInterval = setInterval(() => {
       if (activeInput) {
         updateEyePosition();
