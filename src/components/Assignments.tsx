@@ -53,10 +53,10 @@ const Assignments: React.FC = () => {
             <BookOpen size={40} className="text-white" />
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
-            Assignment Generator
+            Assignment Assistant
           </h1>
           <p className="text-gray-400 mt-2 text-center max-w-lg">
-            Generate professional academic assignments with AI assistance
+            Professional academic assignments with AI assistance
           </p>
         </div>
 
