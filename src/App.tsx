@@ -13,6 +13,9 @@ import Attendance from './components/Attendance';
 import SmartBoard from './components/SmartBoard';
 import Events from './components/Events';
 import Assignments from './components/Assignments';
+import Notes from './components/Notes';
+import Results from './components/Results';
+import Chatbot from './components/Chatbot';
 
 interface LoginData {
   username: string;
@@ -73,7 +76,6 @@ function App() {
     }
   };
 
-  // Update eye positions based on typing and cursor position
   useEffect(() => {
     const updateEyePosition = () => {
       if (!characterRef.current) return;
@@ -85,26 +87,22 @@ function App() {
       let targetX = characterCenterX;
       let targetY = characterCenterY;
       
-      // Determine target position based on active input
       if (activeInput === 'username' && usernameInputRef.current) {
         const inputRect = usernameInputRef.current.getBoundingClientRect();
-        targetX = inputRect.left + (loginData.username.length * 8) + 10; // Approximate character width
+        targetX = inputRect.left + (loginData.username.length * 8) + 10;
         targetY = inputRect.top + inputRect.height / 2;
       } else if (activeInput === 'password' && passwordInputRef.current) {
         const inputRect = passwordInputRef.current.getBoundingClientRect();
-        targetX = inputRect.left + (loginData.password.length * 8) + 10; // Approximate character width
+        targetX = inputRect.left + (loginData.password.length * 8) + 10;
         targetY = inputRect.top + inputRect.height / 2;
       }
       
-      // Calculate eye movement (limited to within eye socket)
-      const eyeMovementRangeX = 30; // percentage
-      const eyeMovementRangeY = 30; // percentage
+      const eyeMovementRangeX = 30;
+      const eyeMovementRangeY = 30;
       
-      // Calculate direction from character center to target
       const deltaX = targetX - characterCenterX;
       const deltaY = targetY - characterCenterY;
       
-      // Normalize and apply movement range
       const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
       const normalizedX = distance > 0 ? deltaX / distance : 0;
       const normalizedY = distance > 0 ? deltaY / distance : 0;
@@ -120,7 +118,6 @@ function App() {
     
     updateEyePosition();
     
-    // Add small micro-movements when typing
     const typingInterval = setInterval(() => {
       if (activeInput) {
         updateEyePosition();
@@ -139,14 +136,11 @@ function App() {
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 relative">
         <Toaster position="top-right" />
         
-        {/* Fixed Cute Character Head */}
         <div 
           ref={characterRef}
           className="w-32 h-32 bg-purple-500 rounded-full mb-8 relative"
         >
-          {/* Left Eye Socket */}
           <div className="absolute w-8 h-8 bg-white rounded-full left-4 top-8 overflow-hidden">
-            {/* Left Eye Pupil */}
             <div 
               className="absolute w-4 h-4 bg-black rounded-full transition-all duration-100"
               style={{ 
@@ -159,9 +153,7 @@ function App() {
             </div>
           </div>
           
-          {/* Right Eye Socket */}
           <div className="absolute w-8 h-8 bg-white rounded-full right-4 top-8 overflow-hidden">
-            {/* Right Eye Pupil */}
             <div 
               className="absolute w-4 h-4 bg-black rounded-full transition-all duration-100"
               style={{ 
@@ -174,7 +166,6 @@ function App() {
             </div>
           </div>
           
-          {/* Smile */}
           <div className="absolute w-16 h-8 bottom-6 left-8">
             <div className="w-full h-full border-b-4 border-white rounded-full"></div>
           </div>
@@ -221,22 +212,28 @@ function App() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-black text-white flex">
-      <Toaster position="top-right" />
-      
-      <Sidebar activeView={activeView} setActiveView={setActiveView} username={loginData.username} />
-      
-      <main className="flex-1 p-8 ml-64">
-        {activeView === 'dashboard' && <Dashboard attendanceData={attendanceData} />}
-        {activeView === 'timetable' && <TimeTable timetable={attendanceData?.timetable} />}
-        {activeView === 'attendance' && <Attendance attendanceData={attendanceData} />}
-        {activeView === 'assignments' && <Assignments />}
-        {activeView === 'smartboard' && <SmartBoard />}
-        {activeView === 'events' && <Events />}
-      </main>
-    </div>
-  );
+  // In your App.tsx file, modify the return statement at the bottom
+
+return (
+  <div className="min-h-screen bg-black text-white flex">
+    <Toaster position="top-right" />
+    
+    <Sidebar activeView={activeView} setActiveView={setActiveView} username={loginData.username} />
+    
+    <main className="flex-1 p-8 ml-64">
+      {activeView === 'dashboard' && <Dashboard attendanceData={attendanceData} />}
+      {activeView === 'timetable' && <TimeTable timetable={attendanceData?.timetable} />}
+      {activeView === 'attendance' && <Attendance attendanceData={attendanceData} />}
+      {activeView === 'assignments' && <Assignments />}
+      {activeView === 'notes' && <Notes />}
+      {activeView === 'results' && <Results />}
+      {activeView === 'smartboard' && <SmartBoard />}
+      {activeView === 'events' && <Events />}
+    </main>
+
+    <Chatbot attendanceData={attendanceData} username={loginData.username} />
+  </div>
+);
 }
 
 export default App;

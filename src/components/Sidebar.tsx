@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   LayoutDashboard, Calendar, Clock, BookOpen, 
-  Monitor, CalendarClock, User, LogOut, ChevronLeft, ChevronRight
+  Monitor, CalendarClock, User, LogOut, ChevronLeft, ChevronRight,
+  GraduationCap, Book
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -38,6 +39,8 @@ const Sidebar = ({ activeView, setActiveView, username }: SidebarProps) => {
     { id: 'timetable', icon: Calendar, label: 'Time Table' },
     { id: 'attendance', icon: Clock, label: 'Attendance' },
     { id: 'assignments', icon: BookOpen, label: 'Assignments' },
+    { id: 'notes', icon: Book, label: 'Notes' },
+    { id: 'results', icon: GraduationCap, label: 'Results' },
     { id: 'smartboard', icon: Monitor, label: 'Smart Board' },
     { id: 'events', icon: CalendarClock, label: 'College Events' },
   ];
