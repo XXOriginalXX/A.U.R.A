@@ -41,7 +41,7 @@ const Sidebar = ({ activeView, setActiveView, username }: SidebarProps) => {
     { id: 'assignments', icon: BookOpen, label: 'Assignments' },
     { id: 'notes', icon: Book, label: 'Notes' },
     { id: 'activity-points', icon: Monitor, label: 'Activity Points' },
-    { id: 'results', icon: GraduationCap, label: 'Results' },
+    // { id: 'results', icon: GraduationCap, label: 'Results' },
     { id: 'smartboard', icon: Monitor, label: 'Smart Board' },
     { id: 'events', icon: CalendarClock, label: 'College Events' },
   ];
