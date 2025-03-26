@@ -16,6 +16,7 @@ import Assignments from './components/Assignments';
 import Notes from './components/Notes';
 import Results from './components/Results';
 import Chatbot from './components/Chatbot';
+import ActivityPointsPrediction from './components/ActivityPointsPrediction';
 
 interface LoginData {
   username: string;
@@ -229,6 +230,7 @@ return (
       {activeView === 'results' && <Results />}
       {activeView === 'smartboard' && <SmartBoard />}
       {activeView === 'events' && <Events />}
+      {activeView === 'activity-points' && <ActivityPointsPrediction username={loginData.username} />}
     </main>
 
     <Chatbot attendanceData={attendanceData} username={loginData.username} />
