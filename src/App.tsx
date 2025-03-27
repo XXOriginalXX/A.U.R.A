@@ -174,7 +174,7 @@ function App() {
 
         <div className="text-6xl font-bold text-white mb-2 font-reospec">AURA</div>
         <div className="text-gray-400 mb-8 text-center">
-          Academic Utility and Resource Allocator
+          Academic Utility and Resource Assistant
         </div>
         <form onSubmit={handleLogin} className="w-full max-w-md space-y-4">
           <div className="border border-gray-700 rounded-lg p-6 bg-black">
