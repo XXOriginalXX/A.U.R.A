@@ -46,7 +46,18 @@ AURA is a one-stop academic platform built to enhance students' productivity and
 ![AURA Timetable](./assets/timetable.png)
 
 ### 📊 Attendance Tracker
-![AURA Attendance](./assets/attendance.png)
+![AURA Attendance](./assets/attendence.png)
+
+### 📊 Assignment Assistant
+![AURA Assignment](./assets/assignmentassistant.png)
+
+### 📊 Smart Board
+![AURA Smart Board](./assets/smartboard.png)
+
+### 📊 ChatBot 
+![AURA Chatbot](./assets/chatbot.png)
+
+
 ---
 
 ## 📦 Installation
