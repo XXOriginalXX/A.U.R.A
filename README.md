@@ -72,3 +72,19 @@ npm install
 
 # Start the development server
 npm run dev
+```
+
+## 🧪 Deployment
+We use Netlify for frontend deployment and Render.io for backend scraping tasks.
+
+🤝 Team
+- **Adithyan S Pillai**
+
+-  **Adrija A**
+
+-  **Gowri P N**
+
+
+## 🌐 Live Demo
+```bash
+https://a-u-r-a.netlify.app/
